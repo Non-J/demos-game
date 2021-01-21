@@ -1,0 +1,9 @@
+[package]
+name = "demos_server"
+version = "0.1.0"
+authors = ["Non-J <45286033+Non-J@users.noreply.github.com>"]
+edition = "2018"
+repository = "https://github.com/Non-J/demos-game"
+license = "MIT"
+
+[dependencies]
