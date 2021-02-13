@@ -1,0 +1,38 @@
+/* Fonts */
+@font-face {
+  font-family: 'Merriweather Sans';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  /*noinspection CssUnknownTarget*/
+  src: url("MerriweatherSans.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Merriweather Sans';
+  font-style: italic;
+  font-weight: 300 800;
+  font-display: swap;
+  /*noinspection CssUnknownTarget*/
+  src: url("MerriweatherSans-Italic.ttf") format("truetype");
+}
+
+/* Box Sizing */
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+/* Body */
+body {
+  margin: 0;
+  font-family: 'Merriweather Sans', sans-serif;
+}
+
+#loading-text {
+  height: 100%;
+  text-align: center;
+}

@@ -7,3 +7,7 @@ repository = "https://github.com/Non-J/demos-game"
 license = "MIT"
 
 [dependencies]
+crossbeam-queue = { version = "0.3" }
+futures = { version = "0.3" }
+tokio = { version = "1", features = ["full"] }
+warp = { version = "0.3" }
