@@ -4,6 +4,7 @@ import useClientState from './ClientState';
 import ClientSettings from './ClientSettings';
 import Home from './Home';
 import { AppBar, Button, createStyles, makeStyles, Toolbar, Typography } from '@material-ui/core';
+import About from './About';
 
 const useStyles = makeStyles((theme) => createStyles({
   menuButton: {
@@ -27,10 +28,15 @@ const App: React.FunctionComponent = () => {
             Demos: The Civic Life
           </Typography>
           <Button component={RouterLink} to='/settings' className={styles.menuButton}>Settings</Button>
+          <Button component={RouterLink} to='/about' className={styles.menuButton}>About</Button>
         </Toolbar>
       </AppBar>
 
       <Switch>
+
+        <Route exact path='/about'>
+          <About />
+        </Route>
 
         <Route exact path='/settings'>
           <ClientSettings />

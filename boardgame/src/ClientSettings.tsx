@@ -5,8 +5,8 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Box,
   Button,
+  Container,
   createStyles,
   Grid,
   makeStyles,
@@ -19,10 +19,7 @@ const useStyles = makeStyles((theme) => createStyles({
     padding: theme.spacing(4),
   },
   initText: {
-    marginTop: theme.spacing(1),
-  },
-  form: {
-    marginTop: theme.spacing(2),
+    margin: theme.spacing(1, 0),
   },
   input: {
     margin: theme.spacing(2, 0, 0),
@@ -47,14 +44,15 @@ const ClientSettings: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <Box className={styles.container}>
+      <Container maxWidth='md' className={styles.container}>
 
         {clientStates.initState
-          ? <Typography className={styles.initText} variant='h6'>Before we begin, please enter some basic information
-            below.</Typography>
+          ? <Typography className={styles.initText} variant='h6'>
+            Before we begin, please enter some basic information below.
+          </Typography>
           : null}
 
-        <form className={styles.form} autoComplete='off' onSubmit={formSubmit}>
+        <form autoComplete='off' onSubmit={formSubmit}>
 
           <TextField
             className={styles.input}
@@ -105,7 +103,7 @@ const ClientSettings: React.FunctionComponent = () => {
 
         </form>
 
-      </Box>
+      </Container>
     </React.Fragment>
   );
 };
