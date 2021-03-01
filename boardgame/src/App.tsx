@@ -3,9 +3,10 @@ import { Link as RouterLink, Route, Switch } from 'react-router-dom';
 import useClientState from './ClientState';
 import ClientSettings from './ClientSettings';
 import GameLobby from './GameLobby';
-import { AppBar, Button, createStyles, Link, makeStyles, Toolbar, Typography } from '@material-ui/core';
+import { AppBar, Box, Button, createStyles, Link, makeStyles, Toolbar, Typography } from '@material-ui/core';
 import About from './About';
 import GameCreateRoom from './GameCreateRoom';
+import LeaveButton from './LeaveButton';
 
 const useStyles = makeStyles((theme) => createStyles({
   menuButton: {
@@ -19,6 +20,7 @@ const useStyles = makeStyles((theme) => createStyles({
 const App: React.FunctionComponent = () => {
   const styles = useStyles();
   const clientInitState = useClientState(state => state.initState);
+  const roomID = useClientState(state => state.roomID);
 
   return (
     <React.Fragment>
@@ -28,6 +30,7 @@ const App: React.FunctionComponent = () => {
           <Typography variant='h6' className={styles.title}>
             <Link component={RouterLink} to='/' color='inherit'>Demos: The Civic Life</Link>
           </Typography>
+          {roomID && <Box className={styles.menuButton}> <LeaveButton /> </Box>}
           <Button component={RouterLink} to='/settings' className={styles.menuButton}>Settings</Button>
           <Button component={RouterLink} to='/about' className={styles.menuButton}>About</Button>
         </Toolbar>

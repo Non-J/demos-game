@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Button, Container, createStyles, Grid, makeStyles, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Container,
+  createStyles,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  Grid,
+  makeStyles,
+  Typography,
+} from '@material-ui/core';
 import { Redirect } from 'react-router-dom';
 import useClientState from './ClientState';
 
@@ -21,38 +32,60 @@ interface CreateButtonProps {
   setButtonLock: (lock: boolean) => void,
 }
 
-const CreateButton: React.FunctionComponent<CreateButtonProps> = ({
-                                                                    numPlayers,
-                                                                    buttonLock,
-                                                                    setButtonLock,
-                                                                  }: CreateButtonProps) => {
+const CreateButton: React.FunctionComponent<CreateButtonProps> = (
+  {
+    numPlayers,
+    buttonLock,
+    setButtonLock,
+  }: CreateButtonProps,
+) => {
   const styles = useStyles();
   const createRoom = useClientState(state => state.createRoom);
+  const [open, setOpen] = React.useState<boolean>(false);
 
   return (
-    <Grid item xs={12} sm={6}>
-      <Button
-        variant='contained'
-        color='primary'
-        fullWidth
-        className={styles.button}
-        disabled={buttonLock}
-        onClick={
-          () => {
-            setButtonLock(true);
-            createRoom(numPlayers)
-              .catch(e => {
-                window.alert('Unable to create a new room.\nThe server maybe offline at the moment.');
-                console.error(e);
-              })
-              .finally(() => {
-                setButtonLock(false);
-              });
-          }
-        }>
-        {numPlayers} Players
-      </Button>
-    </Grid>
+    <React.Fragment>
+      <Dialog open={open} onClose={() => {
+        setOpen(false);
+      }}>
+        <DialogTitle>Unable to create a new room.</DialogTitle>
+        <Box m={2}>
+          <Typography variant='body2'>
+            The server may be offline at the moment. <br />
+            You can also try changing the server in Advanced Settings.
+          </Typography>
+        </Box>
+        <DialogActions>
+          <Button onClick={() => {
+            setOpen(false);
+          }} variant='contained' color='primary'>OK</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Grid item xs={12} sm={6}>
+        <Button
+          variant='contained'
+          color='primary'
+          fullWidth
+          className={styles.button}
+          disabled={buttonLock}
+          onClick={
+            () => {
+              setButtonLock(true);
+              createRoom(numPlayers)
+                .catch(e => {
+                  setOpen(true);
+                  console.error(e);
+                })
+                .finally(() => {
+                  setButtonLock(false);
+                });
+            }
+          }>
+          {numPlayers} Players
+        </Button>
+      </Grid>
+    </React.Fragment>
   );
 };
 

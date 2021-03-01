@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import useClientState from './ClientState';
-import { Box, Button, CircularProgress, Container, createStyles, makeStyles, Typography } from '@material-ui/core';
-import { useHistory, useParams } from 'react-router-dom';
+import {
+  Box,
+  CircularProgress,
+  Container,
+  createStyles,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  makeStyles,
+  Paper,
+  Typography,
+} from '@material-ui/core';
+import { useParams } from 'react-router-dom';
 import type { LobbyAPI } from 'boardgame.io';
 import { Client } from 'boardgame.io/react';
 import { Demos } from './Demos';
@@ -14,6 +26,12 @@ const useStyles = makeStyles((theme) => createStyles({
   },
   statusText: {
     margin: theme.spacing(4, 0),
+  },
+  roomStatusText: {
+    margin: theme.spacing(4, 0, 2, 0),
+  },
+  leaveButton: {
+    margin: theme.spacing(2, 0, 0, 0),
   },
 }));
 
@@ -78,9 +96,7 @@ interface GameLobbySetupProps {
 
 const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGame }) => {
   const styles = useStyles();
-  const history = useHistory();
   const joinRoom = useClientState(state => state.joinRoom);
-  const leaveRoom = useClientState(state => state.leaveRoom);
   const getRoomData = useClientState(state => state.getRoomData);
   const [roomData, setRoomData] = useState<LobbyAPI.Match | undefined>(undefined);
   const [roomSearchingStatus, setRoomSearchingStatus] = useState<RoomSearchingStatus>(RoomSearchingStatus.Initializing);
@@ -88,6 +104,7 @@ const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGam
 
   React.useEffect(() => {
     // Try to join room when this component is rendered
+    setRoomSearchingStatus(RoomSearchingStatus.Initializing);
     joinRoom(roomID);
   }, [roomID]);
 
@@ -115,7 +132,7 @@ const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGam
             clearInterval(intervalID);
           }
         });
-    }, 1000);
+    }, 2000);
 
     return () => clearInterval(intervalID);
   }, [roomID]);
@@ -126,46 +143,68 @@ const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGam
       <Container maxWidth='md' className={styles.container}>
         <Typography variant='h3'>Joining Game</Typography>
         <Typography variant='body1'>
-          To invite others, just send the link: <i>{window.location.toString()}</i>
+          To invite others, just send the link: <i><u>{window.location.toString()}</u></i>
         </Typography>
 
         {
           roomSearchingStatus === RoomSearchingStatus.Initializing &&
-          <Typography
-            variant='body1'
-            className={styles.statusText}>
-            Please wait a moment while we're looking for your room.
-          </Typography>
+          <Box display='flex' m={6} justifyContent='center' alignItems='center' flexDirection='column'>
+            <CircularProgress />
+            <Typography
+              variant='subtitle2'
+              className={styles.statusText}>
+              Please wait a moment while we're looking for your room.
+            </Typography>
+          </Box>
         }
         {
           roomSearchingStatus === RoomSearchingStatus.InvalidRoomID &&
-          <Typography
-            variant='body1'
-            className={styles.statusText}>
-            Cannot join room as the room ID is invalid. If you've been sent a link, make sure it is correct.
-          </Typography>
+          <Box display='flex' m={6} justifyContent='center' alignItems='center' flexDirection='column'>
+            <Typography
+              variant='subtitle2'
+              className={styles.statusText}>
+              Cannot join as the room ID is invalid. If you've been sent a link, make sure it is correct.
+            </Typography>
+          </Box>
         }
         {
           roomSearchingStatus === RoomSearchingStatus.RoomFull &&
-          <Typography
-            variant='body1'
-            className={styles.statusText}>
-            Cannot join room as the room is already full.
-          </Typography>
+          <Box display='flex' m={6} justifyContent='center' alignItems='center' flexDirection='column'>
+            <Typography
+              variant='subtitle2'
+              className={styles.statusText}>
+              Cannot join this room as it is already full.
+            </Typography>
+          </Box>
         }
         {
           roomSearchingStatus === RoomSearchingStatus.Found &&
-          <pre>{JSON.stringify(roomData)}</pre>
+          <React.Fragment>
+            <Typography
+              variant='subtitle2'
+              className={styles.roomStatusText}>
+              Waiting for {roomData?.players.filter(p => !p.name).length} more players.
+              The game will start as soon as the room is full.
+            </Typography>
+            <Paper>
+              <List>
+                {
+                  roomData?.players.map((p) => {
+                    return (
+                      <React.Fragment>
+                        <ListItem>
+                          <ListItemText
+                            primary={p.name ? `[ ${p.id + 1} ] ${p.name}` : `[ Player ${p.id + 1} has not joined ]`} />
+                        </ListItem>
+                        {p.id !== roomData?.players.length - 1 && <Divider />}
+                      </React.Fragment>
+                    );
+                  })
+                }
+              </List>
+            </Paper>
+          </React.Fragment>
         }
-
-        <Button variant='contained' color='secondary' fullWidth onClick={
-          () => {
-            leaveRoom()
-              .then(() => {
-                history.replace('/');
-              });
-          }
-        }>Leave Room</Button>
       </Container>
     </React.Fragment>
   );
