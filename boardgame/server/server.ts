@@ -1,6 +1,6 @@
 import { Server } from 'boardgame.io/server';
-import { CountingGame } from '../src/game/Counting';
+import { Demos } from '../src/Demos';
 
-const server = Server({ games: [CountingGame] });
+const server = Server({ games: [Demos] });
 
 server.run(9000);

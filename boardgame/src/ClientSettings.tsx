@@ -1,4 +1,4 @@
-import React, { FormEventHandler } from 'react';
+import React from 'react';
 import useClientState from './ClientState';
 import { useHistory } from 'react-router-dom';
 import {
@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
+import shallow from 'zustand/shallow';
 
 const useStyles = makeStyles((theme) => createStyles({
   container: {
@@ -33,20 +34,22 @@ const ClientSettings: React.FunctionComponent = () => {
   const styles = useStyles();
   const history = useHistory();
 
-  const clientStates = useClientState(state => state);
+  const [username, setUsername, server, setServer, initState, clearInitStateFlag] = useClientState(state => [
+    state.username, state.setUsername, state.server, state.setServer, state.initState, state.clearInitStateFlag,
+  ], shallow);
 
-  const formSubmit: FormEventHandler = (event) => {
-    clientStates.setState({
-      initState: false,
-    });
-    history.replace('/');
+  const formSubmit: React.FormEventHandler = () => {
+    clearInitStateFlag();
+    if (history.location.pathname === '/settings') {
+      history.replace('/');
+    }
   };
 
   return (
     <React.Fragment>
       <Container maxWidth='md' className={styles.container}>
 
-        {clientStates.initState
+        {initState
           ? <Typography className={styles.initText} variant='h6'>
             Before we begin, please enter some basic information below.
           </Typography>
@@ -58,9 +61,9 @@ const ClientSettings: React.FunctionComponent = () => {
             className={styles.input}
             label='Name'
             helperText={'This name will be displayed to others.'}
-            value={clientStates.username}
+            value={username}
             onChange={(e) => {
-              clientStates.setState({ username: e.target.value });
+              setUsername(e.target.value);
             }}
             required
             variant='outlined'
@@ -80,9 +83,9 @@ const ClientSettings: React.FunctionComponent = () => {
                 <TextField
                   className={styles.input}
                   label='Server'
-                  value={clientStates.server}
+                  value={server}
                   onChange={(e) => {
-                    clientStates.setState({ server: e.target.value });
+                    setServer(e.target.value);
                   }}
                   required
                   type='url'

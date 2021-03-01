@@ -4,8 +4,8 @@ export interface GameState {
     counter: number
 }
 
-export const CountingGame: Game<GameState> = {
-    name: 'counting-game',
+export const Demos: Game<GameState> = {
+    name: 'demos',
 
     setup(ctx, setupData): GameState {
         return {
