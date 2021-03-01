@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import useClientState from './ClientState';
-import { Button, Container, createStyles, makeStyles, Typography } from '@material-ui/core';
+import { Box, Button, CircularProgress, Container, createStyles, makeStyles, Typography } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
 import type { LobbyAPI } from 'boardgame.io';
+import { Client } from 'boardgame.io/react';
+import { Demos } from './Demos';
+import { SocketIO } from 'boardgame.io/multiplayer';
+import GameBoard from './GameBoard';
 
 const useStyles = makeStyles((theme) => createStyles({
   container: {
@@ -17,7 +21,7 @@ const GameLobby: React.FunctionComponent = () => {
   const [isGameRunning, setGameRunning] = useState(false);
 
   return isGameRunning ? (
-    <h1 />
+    <GameLobbyClient />
   ) : (
     <GameLobbySetup startGame={() => {
       setGameRunning(true);
@@ -26,15 +30,50 @@ const GameLobby: React.FunctionComponent = () => {
 
 };
 
-interface GameLobbySetupProps {
-  startGame(): void
-}
+export default GameLobby;
+
+const GameLobbyClientLoading: React.FunctionComponent = () => {
+  return (
+    <React.Fragment>
+      <Box display='flex' m={6} justifyContent='center'>
+        <CircularProgress />
+      </Box>
+    </React.Fragment>
+  );
+};
+
+const GameLobbyClient: React.FunctionComponent = () => {
+  const { roomID } = useParams() as { roomID: string };
+  const server = useClientState(state => state.server);
+  const playerID = useClientState(state => state.playerID);
+  const credentials = useClientState(state => state.credentials);
+
+  const GameClient = Client({
+    game: Demos,
+    board: GameBoard,
+    loading: GameLobbyClientLoading,
+    multiplayer: SocketIO({ server: server }),
+    debug: true,
+  });
+
+  return (
+    <GameClient
+      matchID={roomID}
+      playerID={playerID?.toString()}
+      credentials={credentials}
+    />
+  );
+};
 
 enum RoomSearchingStatus {
   Initializing,
   Found,
   InvalidRoomID,
   RoomFull,
+}
+
+interface GameLobbySetupProps {
+  startGame(): void
 }
 
 const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGame }) => {
@@ -132,4 +171,3 @@ const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGam
   );
 };
 
-export default GameLobby;
