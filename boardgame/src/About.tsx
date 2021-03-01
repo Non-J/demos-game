@@ -1,5 +1,6 @@
 import React from 'react';
-import { Container, createStyles, Link, makeStyles, Typography } from '@material-ui/core';
+import { Button, Container, createStyles, Link, makeStyles, Typography } from '@material-ui/core';
+import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => createStyles({
   container: {
@@ -8,9 +9,13 @@ const useStyles = makeStyles((theme) => createStyles({
   text: {
     marginTop: theme.spacing(2),
   },
+  backButton: {
+    marginTop: theme.spacing(4),
+  },
 }));
 
 const About: React.FunctionComponent = () => {
+  const history = useHistory();
   const styles = useStyles();
 
   return (
@@ -28,6 +33,15 @@ const About: React.FunctionComponent = () => {
                              href='https://github.com/Non-J/demos-game'>GitHub</Link>) <br />
           This project is made possible by the generosity of other free and open source projects.
         </Typography>
+        <Button
+          variant='contained'
+          color='primary'
+          className={styles.backButton}
+          fullWidth
+          onClick={() => {
+            history.goBack();
+          }}
+        >Back</Button>
       </Container>
     </React.Fragment>
   );
