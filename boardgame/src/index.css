@@ -5,7 +5,7 @@
   font-weight: 300 800;
   font-display: swap;
   /*noinspection CssUnknownTarget*/
-  src: url("MerriweatherSans.ttf") format("truetype");
+  src: url("/MerriweatherSans.ttf") format("truetype");
 }
 
 @font-face {
@@ -14,7 +14,7 @@
   font-weight: 300 800;
   font-display: swap;
   /*noinspection CssUnknownTarget*/
-  src: url("MerriweatherSans-Italic.ttf") format("truetype");
+  src: url("/MerriweatherSans-Italic.ttf") format("truetype");
 }
 
 /* Box Sizing */
