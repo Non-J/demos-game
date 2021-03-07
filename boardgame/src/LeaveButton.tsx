@@ -40,6 +40,8 @@ const LeaveButton: React.FunctionComponent = () => {
                 setButtonDisable(true);
                 leaveRoom()
                   .then(() => {
+                    setOpen(false);
+                    setButtonDisable(false);
                     history.replace('/');
                   });
               }
