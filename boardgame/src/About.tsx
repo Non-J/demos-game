@@ -27,11 +27,11 @@ const About: React.FunctionComponent = () => {
           Copyright (c) 2021 Jirawut Thongraar
         </Typography>
         <Typography variant='body1' className={styles.text}>
-          This project is a part of World History course at Kamnoetvidya Science Academy. <br />
-          This project is open source under the MIT license.
-          (Repository: <Link color='inherit' underline='always'
-                             href='https://github.com/Non-J/demos-game'>GitHub</Link>) <br />
-          This project is made possible by the generosity of other free and open source projects.
+          This project is a part of the World History course at Kamnoetvidya Science Academy. <br />
+          This project is open source under the MIT license
+          (repository: <Link color='inherit' underline='always'
+                 href='https://github.com/Non-J/demos-game'>GitHub</Link>)
+          and made possible by the generosity of other free and open source projects.
         </Typography>
         <Button
           variant='contained'
