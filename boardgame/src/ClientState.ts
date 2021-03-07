@@ -26,6 +26,7 @@ interface ClientState extends State {
   roomID?: string;
   playerID?: number;
   credentials?: string;
+  cacheRoomData?: RoomData;
 
   // Note: These actions may cause race-condition as they read from ClientState but does not lock.
   // However, in practice, these should not be called fast enough to trigger the bugs.
@@ -121,13 +122,15 @@ const useClientState = create<ClientState>(persist(
 
       try {
         let response = await lobbyClient.getMatch(gameName, queryRoomID);
-        return {
+        let result = {
           ...response,
           nextEmptySeat: response?.players.find((p) => !p.name)?.id,
           isAlreadyJoined: response?.players.find((p) => {
             return p.id === state.playerID && p.name === state.username;
           }) !== undefined,
         };
+        set({ cacheRoomData: result });
+        return result;
       } catch {
         return null;
       }

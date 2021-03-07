@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useClientState from './ClientState';
+import useClientState, { RoomData } from './ClientState';
 import {
   Box,
   CircularProgress,
@@ -14,7 +14,6 @@ import {
   Typography,
 } from '@material-ui/core';
 import { useParams } from 'react-router-dom';
-import type { LobbyAPI } from 'boardgame.io';
 import { Client } from 'boardgame.io/react';
 import { Demos } from './Demos';
 import { SocketIO } from 'boardgame.io/multiplayer';
@@ -98,7 +97,7 @@ const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGam
   const styles = useStyles();
   const joinRoom = useClientState(state => state.joinRoom);
   const getRoomData = useClientState(state => state.getRoomData);
-  const [roomData, setRoomData] = useState<LobbyAPI.Match | undefined>(undefined);
+  const [roomData, setRoomData] = useState<RoomData | undefined>(undefined);
   const [roomSearchingStatus, setRoomSearchingStatus] = useState<RoomSearchingStatus>(RoomSearchingStatus.Initializing);
   const { roomID } = useParams() as { roomID: string };
 
