@@ -5,7 +5,8 @@
     "test": "web-test-runner \"src/**/*.test.tsx\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
-    "start-server": "tsc --project server/tsconfig.server.json && node server-build/server/server.js"
+    "start-server": "tsc --project server/tsconfig.server.json && node server-build/server/server.js",
+    "build-server": "tsc --project server/tsconfig.server.json"
   },
   "dependencies": {
     "@material-ui/core": "^4.11.3",
