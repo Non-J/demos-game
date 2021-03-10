@@ -116,7 +116,9 @@ const GameBoard: React.FunctionComponent<BoardProps<GameState>> = (game) => {
 
   const Resources = (
     <React.Fragment>
-      <Dialog open={factoryConvertDialog}>
+      <Dialog open={factoryConvertDialog} onClose={() => {
+        setFactoryConvertDialog(false);
+      }}>
         <DialogTitle>Factory Processing</DialogTitle>
         <DialogContent>
           <Typography variant='body2' color='textSecondary'>
@@ -181,7 +183,9 @@ const GameBoard: React.FunctionComponent<BoardProps<GameState>> = (game) => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={sellDialog}>
+      <Dialog open={sellDialog} onClose={() => {
+        setSellDialog(false);
+      }}>
         <DialogTitle>Sell Resources</DialogTitle>
         <DialogContent>
           <Typography variant='body2' color='textSecondary'>
@@ -285,7 +289,9 @@ const GameBoard: React.FunctionComponent<BoardProps<GameState>> = (game) => {
 
   const Investments = (
     <React.Fragment>
-      <Dialog open={investDialog}>
+      <Dialog open={investDialog} onClose={() => {
+        setInvestDialog(false);
+      }}>
         <DialogTitle>Investments Opportunities</DialogTitle>
 
         <DialogContent>
