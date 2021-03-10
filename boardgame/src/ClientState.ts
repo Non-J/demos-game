@@ -17,6 +17,9 @@ interface ClientState extends State {
   initState: boolean;
   clearInitStateFlag: () => void;
 
+  debugFlag: boolean;
+  setDebugFlag: (_debugFlag: boolean) => void;
+
   username: string;
   setUsername: (_username: string) => void;
 
@@ -42,6 +45,11 @@ const useClientState = create<ClientState>(persist(
     clearInitStateFlag: () => set({
       initState: false,
     }),
+
+    debugFlag: false,
+    setDebugFlag: (_debugFlag => set({
+      debugFlag: _debugFlag,
+    })),
 
     username: '',
     setUsername: (_username) => set({

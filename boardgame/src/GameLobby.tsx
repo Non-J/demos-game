@@ -64,13 +64,14 @@ const GameLobbyClient: React.FunctionComponent = () => {
   const server = useClientState(state => state.server);
   const playerID = useClientState(state => state.playerID);
   const credentials = useClientState(state => state.credentials);
+  const debugFlag = useClientState(state => state.debugFlag);
 
   const GameClient = Client({
     game: Demos,
     board: GameBoard,
     loading: GameLobbyClientLoading,
     multiplayer: SocketIO({ server: server }),
-    debug: true,
+    debug: debugFlag,
   });
 
   return (
@@ -116,7 +117,9 @@ const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGam
 
             if (data.isAlreadyJoined === true && data.nextEmptySeat === undefined) {
               // Already joined and room is full
-              startGame();
+              setTimeout(() => {
+                startGame();
+              }, 1000);
             } else if (data.isAlreadyJoined === false && data.nextEmptySeat === undefined) {
               // Not joined and room is full
               setRoomSearchingStatus(RoomSearchingStatus.RoomFull);
@@ -192,8 +195,10 @@ const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGam
                     return (
                       <React.Fragment>
                         <ListItem>
-                          <ListItemText
-                            primary={p.name ? `[ ${p.id + 1} ] ${p.name}` : `[ Player ${p.id + 1} has not joined ]`} />
+                          <Box overflow='hidden'>
+                            <ListItemText
+                              primary={p.name ? `[ ${p.id + 1} ] ${p.name}` : `[ Player ${p.id + 1} has not joined ]`} />
+                          </Box>
                         </ListItem>
                         {p.id !== roomData?.players.length - 1 && <Divider />}
                       </React.Fragment>

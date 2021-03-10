@@ -8,12 +8,13 @@ import {
   Button,
   Container,
   createStyles,
+  FormControlLabel,
   Grid,
   makeStyles,
+  Switch,
   TextField,
   Typography,
 } from '@material-ui/core';
-import shallow from 'zustand/shallow';
 
 const useStyles = makeStyles((theme) => createStyles({
   container: {
@@ -34,9 +35,14 @@ const ClientSettings: React.FunctionComponent = () => {
   const styles = useStyles();
   const history = useHistory();
 
-  const [username, setUsername, server, setServer, initState, clearInitStateFlag] = useClientState(state => [
-    state.username, state.setUsername, state.server, state.setServer, state.initState, state.clearInitStateFlag,
-  ], shallow);
+  const username = useClientState(state => state.username);
+  const setUsername = useClientState(state => state.setUsername);
+  const debugFlag = useClientState(state => state.debugFlag);
+  const setDebugFlag = useClientState(state => state.setDebugFlag);
+  const server = useClientState(state => state.server);
+  const setServer = useClientState(state => state.setServer);
+  const initState = useClientState(state => state.initState);
+  const clearInitStateFlag = useClientState(state => state.clearInitStateFlag);
 
   const formSubmit: React.FormEventHandler = () => {
     clearInitStateFlag();
@@ -91,6 +97,18 @@ const ClientSettings: React.FunctionComponent = () => {
                   type='url'
                   variant='outlined'
                   fullWidth />
+
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={debugFlag}
+                      onChange={() => {
+                        setDebugFlag(!debugFlag);
+                      }}
+                    />
+                  }
+                  label='Debug Game Board'
+                />
               </Grid>
             </AccordionDetails>
           </Accordion>
