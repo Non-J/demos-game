@@ -133,7 +133,7 @@ export const Demos: Game<GameState> = {
     cycle: {
       start: true,
       next: 'cycle',
-      onEnd: (G, ctx) => {
+      onEnd: (G, _ctx) => {
         G.cycle_count++;
 
         // Global market update (cycle)
@@ -210,7 +210,7 @@ export const Demos: Game<GameState> = {
           }
         },
         order: {
-          first: (G, ctx) => 0,
+          first: (_G, _ctx) => 0,
           next: (G, ctx) => (ctx.playOrderPos + 1) % ctx.numPlayers,
           playOrder: (G, ctx) => arrayShuffle(Array(ctx.numPlayers).fill(0).map((_, i) => String(i))),
         },
@@ -218,7 +218,7 @@ export const Demos: Game<GameState> = {
     },
   },
 
-  setup(ctx, setupData): GameState {
+  setup(ctx, _setupData): GameState {
     const players: Record<string, PlayerState> = {};
     for (let p = 0; p < ctx.numPlayers; p++) {
       players[p.toString()] = {
@@ -276,6 +276,11 @@ export const Demos: Game<GameState> = {
       move: (G, ctx, resource: ResourceTypes, amount: number) => {
         let player = G.players[ctx.currentPlayer];
         const actual_amount = Math.min(amount, player.resources[resource] ?? 0);
+
+        if (actual_amount < 0) {
+          return INVALID_MOVE;
+        }
+
         player.resources[resource] = (player.resources[resource] ?? 0) - actual_amount;
         player.sellResources[resource] = (player.sellResources[resource] ?? 0) + actual_amount;
       },
@@ -294,6 +299,11 @@ export const Demos: Game<GameState> = {
           player.resources[from] ?? 0,
           player.factoryConversionLeft,
         ));
+
+        if (actual_amount < 0) {
+          return INVALID_MOVE;
+        }
+
         player.factoryConversionLeft -= actual_amount;
         player.resources[from] = (player.resources[from] ?? 0) - actual_amount;
         player.resources[to] = (player.resources[to] ?? 0) + actual_amount;
@@ -302,7 +312,7 @@ export const Demos: Game<GameState> = {
 
   },
 
-  endIf(G, ctx) {
+  endIf(G, _ctx) {
     let winner: Array<{ index: number, point: number }> = [];
     G.points.forEach((value, index) => {
       // Enough point for victory condition
