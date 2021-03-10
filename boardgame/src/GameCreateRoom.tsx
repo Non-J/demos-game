@@ -107,8 +107,6 @@ const GameCreateRoom: React.FunctionComponent = () => {
         <Typography variant='body1'>Select the number of players for this room.</Typography>
         <Typography variant='body1'>To join existing room, use the link shared by your friend!</Typography>
 
-        <CreateButton numPlayers={1} buttonLock={buttonLock} setButtonLock={setButtonLock} />
-
         <Grid container spacing={2} className={styles.buttonContainer}>
           <CreateButton numPlayers={3} buttonLock={buttonLock} setButtonLock={setButtonLock} />
           <CreateButton numPlayers={4} buttonLock={buttonLock} setButtonLock={setButtonLock} />
