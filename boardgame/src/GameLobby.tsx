@@ -117,6 +117,7 @@ const GameLobbySetup: React.FunctionComponent<GameLobbySetupProps> = ({ startGam
 
             if (data.isAlreadyJoined === true && data.nextEmptySeat === undefined) {
               // Already joined and room is full
+              setRoomSearchingStatus(RoomSearchingStatus.Initializing);
               setTimeout(() => {
                 startGame();
               }, 1000);
