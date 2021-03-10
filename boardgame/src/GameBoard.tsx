@@ -82,6 +82,8 @@ const GameBoard: React.FunctionComponent<BoardProps<GameState>> = (game) => {
     <Card variant='outlined'>
       <CardContent>
         <Typography variant='h5'>Turn {game.G.cycle_count + 1}</Typography>
+        <Typography variant='body2' color='textSecondary'>You need at least {game.G.victoryConditionPoints} points to
+          win.</Typography>
         {
           roomData?.players.map((player, index) => {
             return (

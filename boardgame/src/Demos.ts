@@ -2,7 +2,7 @@ import type { Game } from 'boardgame.io';
 import { INVALID_MOVE, PlayerView } from 'boardgame.io/core';
 import { arrayShuffle } from './ArrayShuffle';
 
-export const VictoryConditionPoints = 150;
+export const DefaultVictoryConditionPoints = 150;
 export const InvestmentSellPenalty = 0.75;
 export const FactoryProcessingCapacity = 2;
 export const StartingGold = 5000;
@@ -117,6 +117,7 @@ export interface PlayerState {
 export interface GameState {
   players: Record<string, PlayerState>,
 
+  victoryConditionPoints: number,
   points: Array<number>,
   cycle_count: number,
   soldResourcesHistory: Array<Partial<Record<ResourceTypes, number>>>,
@@ -218,7 +219,7 @@ export const Demos: Game<GameState> = {
     },
   },
 
-  setup(ctx, _setupData): GameState {
+  setup(ctx, setupData): GameState {
     const players: Record<string, PlayerState> = {};
     for (let p = 0; p < ctx.numPlayers; p++) {
       players[p.toString()] = {
@@ -233,6 +234,7 @@ export const Demos: Game<GameState> = {
 
     return {
       players: players,
+      victoryConditionPoints: (setupData && Number(setupData['victoryConditionPoints'])) || DefaultVictoryConditionPoints,
       points: Array(ctx.numPlayers).fill(0),
       cycle_count: 0,
       soldResourcesHistory: [],
@@ -316,7 +318,7 @@ export const Demos: Game<GameState> = {
     let winner: Array<{ index: number, point: number }> = [];
     G.points.forEach((value, index) => {
       // Enough point for victory condition
-      if (value < VictoryConditionPoints) {
+      if (value < G.victoryConditionPoints) {
         return;
       }
 

@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Grid,
   makeStyles,
+  TextField,
   Typography,
 } from '@material-ui/core';
 import { Redirect } from 'react-router-dom';
@@ -17,9 +18,6 @@ import useClientState from './ClientState';
 const useStyles = makeStyles((theme) => createStyles({
   container: {
     padding: theme.spacing(4),
-  },
-  buttonContainer: {
-    marginTop: theme.spacing(2),
   },
   button: {
     padding: theme.spacing(2),
@@ -30,6 +28,7 @@ interface CreateButtonProps {
   numPlayers: number,
   buttonLock: boolean,
   setButtonLock: (lock: boolean) => void,
+  pointsGoal: string
 }
 
 const CreateButton: React.FunctionComponent<CreateButtonProps> = (
@@ -37,6 +36,7 @@ const CreateButton: React.FunctionComponent<CreateButtonProps> = (
     numPlayers,
     buttonLock,
     setButtonLock,
+    pointsGoal,
   }: CreateButtonProps,
 ) => {
   const styles = useStyles();
@@ -72,7 +72,9 @@ const CreateButton: React.FunctionComponent<CreateButtonProps> = (
           onClick={
             () => {
               setButtonLock(true);
-              createRoom(numPlayers)
+              createRoom(numPlayers, {
+                victoryConditionPoints: pointsGoal,
+              })
                 .catch(e => {
                   setOpen(true);
                   console.error(e);
@@ -93,6 +95,7 @@ const GameCreateRoom: React.FunctionComponent = () => {
   const styles = useStyles();
   const roomID = useClientState(state => state.roomID);
   const [buttonLock, setButtonLock] = useState<boolean>(false);
+  const [pointsGoal, setPointsGoal] = useState<string>('150');
 
   if (roomID) {
     return (
@@ -104,15 +107,33 @@ const GameCreateRoom: React.FunctionComponent = () => {
     <React.Fragment>
       <Container maxWidth='md' className={styles.container}>
         <Typography variant='h3'>Create New Room</Typography>
-        <Typography variant='body1'>Select the number of players for this room.</Typography>
         <Typography variant='body1'>To join existing room, use the link shared by your friend!</Typography>
 
-        <Grid container spacing={2} className={styles.buttonContainer}>
-          <CreateButton numPlayers={3} buttonLock={buttonLock} setButtonLock={setButtonLock} />
-          <CreateButton numPlayers={4} buttonLock={buttonLock} setButtonLock={setButtonLock} />
-          <CreateButton numPlayers={5} buttonLock={buttonLock} setButtonLock={setButtonLock} />
-          <CreateButton numPlayers={6} buttonLock={buttonLock} setButtonLock={setButtonLock} />
-        </Grid>
+        <Box marginY={2}>
+          <TextField
+            label='Points'
+            helperText={'Set the number of points to win the game.'}
+            value={pointsGoal}
+            onChange={(e) => {
+              setPointsGoal(e.target.value);
+            }}
+            variant='outlined'
+            fullWidth />
+        </Box>
+
+        <Box marginY={2}>
+          <Typography variant='body1'>Select the number of players for this room.</Typography>
+          <Grid container spacing={2}>
+            <CreateButton numPlayers={3} pointsGoal={pointsGoal} buttonLock={buttonLock}
+                          setButtonLock={setButtonLock} />
+            <CreateButton numPlayers={4} pointsGoal={pointsGoal} buttonLock={buttonLock}
+                          setButtonLock={setButtonLock} />
+            <CreateButton numPlayers={5} pointsGoal={pointsGoal} buttonLock={buttonLock}
+                          setButtonLock={setButtonLock} />
+            <CreateButton numPlayers={6} pointsGoal={pointsGoal} buttonLock={buttonLock}
+                          setButtonLock={setButtonLock} />
+          </Grid>
+        </Box>
 
       </Container>
     </React.Fragment>
