@@ -5,7 +5,7 @@ import { arrayShuffle } from './ArrayShuffle';
 export const DefaultVictoryConditionPoints = 150;
 export const InvestmentSellPenalty = 0.75;
 export const FactoryProcessingCapacity = 2;
-export const StartingGold = 5000;
+export const StartingGold = 50;
 
 export enum InvestmentTypes {
   Grain,
@@ -16,11 +16,11 @@ export enum InvestmentTypes {
 }
 
 export const InvestmentCost: Record<InvestmentTypes, number> = {
-  [InvestmentTypes.Grain]: 50,
-  [InvestmentTypes.Legume]: 200,
-  [InvestmentTypes.Olive]: 800,
-  [InvestmentTypes.Grape]: 800,
-  [InvestmentTypes.Factory]: 3400,
+  [InvestmentTypes.Grain]: 0.5,
+  [InvestmentTypes.Legume]: 2,
+  [InvestmentTypes.Olive]: 8,
+  [InvestmentTypes.Grape]: 8,
+  [InvestmentTypes.Factory]: 34,
 };
 
 export enum ResourceTypes {
@@ -64,33 +64,33 @@ export const computeResourcePrice = (amount: number, market: ResourceMarket): nu
 
 export const ResourceMarkets: Record<ResourceTypes, ResourceMarket> = {
   [ResourceTypes.Grain]: {
-    minimumPrice: 4,
-    maximumPrice: 5,
+    minimumPrice: 0.04,
+    maximumPrice: 0.05,
     demandConstant: 6400,
   },
   [ResourceTypes.Legume]: {
-    minimumPrice: 16,
-    maximumPrice: 20,
+    minimumPrice: 0.16,
+    maximumPrice: 0.20,
     demandConstant: 800,
   },
   [ResourceTypes.Olive]: {
-    minimumPrice: 67,
-    maximumPrice: 100,
+    minimumPrice: 0.67,
+    maximumPrice: 1.00,
     demandConstant: 80,
   },
   [ResourceTypes.Grape]: {
-    minimumPrice: 67,
-    maximumPrice: 100,
+    minimumPrice: 0.67,
+    maximumPrice: 1.00,
     demandConstant: 80,
   },
   [ResourceTypes.OliveOil]: {
-    minimumPrice: 100,
-    maximumPrice: 400,
+    minimumPrice: 1.00,
+    maximumPrice: 4.00,
     demandConstant: 15,
   },
   [ResourceTypes.Wine]: {
-    minimumPrice: 100,
-    maximumPrice: 400,
+    minimumPrice: 1.00,
+    maximumPrice: 4.00,
     demandConstant: 15,
   },
 };
@@ -238,7 +238,7 @@ export const Demos: Game<GameState> = {
       points: Array(ctx.numPlayers).fill(0),
       cycle_count: 0,
       soldResourcesHistory: [],
-      marketPrice: {},
+      marketPrice: Object.fromEntries(Object.entries(ResourceMarkets).map(resource => [resource[0], resource[1].maximumPrice])),
     };
   },
 
