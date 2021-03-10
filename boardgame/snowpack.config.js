@@ -12,7 +12,11 @@ module.exports = {
   routes: [
     { 'match': 'routes', 'src': '.*', 'dest': '/index.html' },
   ],
-  optimize: {},
+  optimize: {
+    bundle: true,
+    treeshake: true,
+    minify: true,
+  },
   packageOptions: {},
   devOptions: {},
   buildOptions: {},
