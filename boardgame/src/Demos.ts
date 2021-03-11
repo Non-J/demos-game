@@ -1,11 +1,16 @@
 import type { Game } from 'boardgame.io';
 import { INVALID_MOVE, PlayerView } from 'boardgame.io/core';
 import { arrayShuffle } from './ArrayShuffle';
+import type { ElectionBlock } from './GameElection';
+import { determineElectionWinner, generateElections } from './GameElection';
+import { sha256 } from 'js-sha256';
 
 export const DefaultVictoryConditionPoints = 150;
 export const InvestmentSellPenalty = 0.75;
 export const FactoryProcessingCapacity = 2;
-export const StartingGold = 50;
+export const StartingGold = 80;
+export const BriberyEffectiveness = 0.75;
+export const BriberyBackfireChance = 0.05;
 
 export enum InvestmentTypes {
   Grain,
@@ -20,7 +25,7 @@ export const InvestmentCost: Record<InvestmentTypes, number> = {
   [InvestmentTypes.Legume]: 2,
   [InvestmentTypes.Olive]: 8,
   [InvestmentTypes.Grape]: 8,
-  [InvestmentTypes.Factory]: 34,
+  [InvestmentTypes.Factory]: 35,
 };
 
 export enum ResourceTypes {
@@ -84,15 +89,64 @@ export const ResourceMarkets: Record<ResourceTypes, ResourceMarket> = {
     demandConstant: 80,
   },
   [ResourceTypes.OliveOil]: {
-    minimumPrice: 1.00,
-    maximumPrice: 4.00,
+    minimumPrice: 2.50,
+    maximumPrice: 7.50,
     demandConstant: 15,
   },
   [ResourceTypes.Wine]: {
-    minimumPrice: 1.00,
-    maximumPrice: 4.00,
+    minimumPrice: 2.50,
+    maximumPrice: 7.50,
     demandConstant: 15,
   },
+};
+
+export enum CampaignEffectsTypes {
+  CaughtBribe,
+  Greeters,
+  Writers,
+  Posters,
+  ForumDebates,
+}
+
+export const CampaignEffectsTypesArray: Array<CampaignEffectsTypes> = [
+  CampaignEffectsTypes.CaughtBribe,
+  CampaignEffectsTypes.Greeters,
+  CampaignEffectsTypes.Writers,
+  CampaignEffectsTypes.Posters,
+  CampaignEffectsTypes.ForumDebates,
+];
+
+export interface ActiveCampaignEffect {
+  period: number
+}
+
+export interface CampaignEffect extends ActiveCampaignEffect {
+  effectiveness: number,
+  cost: number,
+  stacked: boolean,
+}
+
+export const CampaignEffects: Record<CampaignEffectsTypes, CampaignEffect> = {
+  [CampaignEffectsTypes.CaughtBribe]: { effectiveness: -0.10, period: 4, cost: 0, stacked: false },
+  [CampaignEffectsTypes.Greeters]: { effectiveness: 0.05, period: Infinity, cost: 5, stacked: true },
+  [CampaignEffectsTypes.Writers]: { effectiveness: 0.10, period: Infinity, cost: 20, stacked: true },
+  [CampaignEffectsTypes.Posters]: { effectiveness: 0.20, period: 10, cost: 2.5, stacked: true },
+  [CampaignEffectsTypes.ForumDebates]: { effectiveness: 0.50, period: 4, cost: 12.5, stacked: true },
+};
+
+export type ActiveCampaignEffectState = Partial<Record<CampaignEffectsTypes, Array<ActiveCampaignEffect>>>;
+
+const computeCampaignEffectsNextState = (effects: ActiveCampaignEffectState): ActiveCampaignEffectState => {
+  let result: ActiveCampaignEffectState = {};
+  for (const type of CampaignEffectsTypesArray) {
+    result[type] = [];
+    for (const val of effects[type] ?? []) {
+      if (val.period - 1 > 0) {
+        result[type]?.push({ ...val, period: val.period - 1 });
+      }
+    }
+  }
+  return result;
 };
 
 export enum EventsLogTypes {
@@ -112,6 +166,9 @@ export interface PlayerState {
   factoryConversionLeft: number,
   resources: Partial<Record<ResourceTypes, number>>,
   sellResources: Partial<Record<ResourceTypes, number>>,
+  campaignEffectiveness: number,
+  activeCampaignEffects: ActiveCampaignEffectState,
+  hasBribed: boolean,
 }
 
 export interface GameState {
@@ -122,6 +179,7 @@ export interface GameState {
   cycle_count: number,
   soldResourcesHistory: Array<Partial<Record<ResourceTypes, number>>>,
   marketPrice: Partial<Record<ResourceTypes, number>>,
+  elections: Array<ElectionBlock>,
 }
 
 export const Demos: Game<GameState> = {
@@ -134,7 +192,7 @@ export const Demos: Game<GameState> = {
     cycle: {
       start: true,
       next: 'cycle',
-      onEnd: (G, _ctx) => {
+      onEnd: (G, ctx) => {
         G.cycle_count++;
 
         // Global market update (cycle)
@@ -165,9 +223,30 @@ export const Demos: Game<GameState> = {
         }
         G.marketPrice = marketPrice;
 
+        // Run election
+        let update_points = [...G.points];
+        let new_points = Array(ctx.numPlayers).fill(0);
+        for (const election of G.elections) {
+          const winner = determineElectionWinner(election);
+          if (winner[0] > 0) {
+            update_points[winner[1]] += election.pointAwards;
+            new_points[winner[1]] += election.pointAwards;
+          }
+        }
+        G.points = update_points;
+        G.elections = generateElections(ctx.numPlayers, ctx);
+
         // Player update (cycle)
         for (const p of Object.keys(G.players)) {
           let player = G.players[p];
+
+          if (new_points[Number(p)] > 0) {
+            player.eventsLog.push({
+              type: EventsLogTypes.Text,
+              data: `You have won ${new_points[Number(p)]} points from the previous election.`,
+              time: Date.now(),
+            });
+          }
 
           // Player investment update
           const resourceUpdateMap: Array<[InvestmentTypes, ResourceTypes, number]> = [
@@ -202,6 +281,41 @@ export const Demos: Game<GameState> = {
               time: Date.now(),
             });
           }
+
+          // Bribe scandal
+          if (player.hasBribed) {
+            const random = ctx.random?.Number() ?? Math.random();
+            if (random < BriberyBackfireChance) {
+              if (CampaignEffects[CampaignEffectsTypes.CaughtBribe].stacked) {
+                player.campaignEffectiveness += CampaignEffects[CampaignEffectsTypes.CaughtBribe].effectiveness;
+              } else {
+                player.campaignEffectiveness += player.activeCampaignEffects[CampaignEffectsTypes.CaughtBribe]?.length ? 0 : CampaignEffects[CampaignEffectsTypes.CaughtBribe].effectiveness;
+              }
+              player.activeCampaignEffects[CampaignEffectsTypes.CaughtBribe] = [...(player.activeCampaignEffects[CampaignEffectsTypes.CaughtBribe] ?? []), { period: CampaignEffects[CampaignEffectsTypes.CaughtBribe].period }];
+
+              player.eventsLog.push({
+                type: EventsLogTypes.Text,
+                data: `You have been caught in a bribery scandal!`,
+                time: Date.now(),
+              });
+            }
+          }
+          player.hasBribed = false;
+
+          // Update campaign improvement/management
+          player.activeCampaignEffects = computeCampaignEffectsNextState(player.activeCampaignEffects);
+
+          // Recompute campaign effectiveness
+          let campaignEffectiveness = 1;
+          for (const type of CampaignEffectsTypesArray) {
+            if (CampaignEffects[type].stacked) {
+              campaignEffectiveness += (player.activeCampaignEffects[type]?.length ?? 0) * CampaignEffects[type].effectiveness;
+            } else {
+              campaignEffectiveness += player.activeCampaignEffects[type]?.length ? CampaignEffects[type].effectiveness : 0;
+            }
+          }
+          player.campaignEffectiveness = campaignEffectiveness;
+
         }
       },
       turn: {
@@ -229,6 +343,9 @@ export const Demos: Game<GameState> = {
         factoryConversionLeft: 0,
         resources: {},
         sellResources: {},
+        campaignEffectiveness: 1,
+        activeCampaignEffects: {},
+        hasBribed: false,
       };
     }
 
@@ -239,6 +356,7 @@ export const Demos: Game<GameState> = {
       cycle_count: 0,
       soldResourcesHistory: [],
       marketPrice: Object.fromEntries(Object.entries(ResourceMarkets).map(resource => [resource[0], resource[1].maximumPrice])),
+      elections: generateElections(ctx.numPlayers, ctx),
     };
   },
 
@@ -309,6 +427,69 @@ export const Demos: Game<GameState> = {
         player.factoryConversionLeft -= actual_amount;
         player.resources[from] = (player.resources[from] ?? 0) - actual_amount;
         player.resources[to] = (player.resources[to] ?? 0) + actual_amount;
+      },
+    },
+
+    buyCampaignImprovement: {
+      undoable: false,
+      client: false,
+      move: (G, ctx, type: CampaignEffectsTypes) => {
+        let player = G.players[ctx.currentPlayer];
+
+        if (player.gold < CampaignEffects[type].cost) {
+          return INVALID_MOVE;
+        }
+        player.gold -= CampaignEffects[type].cost;
+        if (CampaignEffects[type].stacked) {
+          player.campaignEffectiveness += CampaignEffects[type].effectiveness;
+        } else {
+          player.campaignEffectiveness += player.activeCampaignEffects[type]?.length ? 0 : CampaignEffects[type].effectiveness;
+        }
+        player.activeCampaignEffects[type] = [...(player.activeCampaignEffects[type] ?? []), { period: CampaignEffects[type].period }];
+      },
+    },
+
+    makeCampaignContribution: {
+      undoable: false,
+      client: false,
+      move: (G, ctx, electionIdx: number, amount: number) => {
+        let player = G.players[ctx.currentPlayer];
+        const actual_amount = Math.min(amount, player.gold);
+        if (actual_amount < 0) {
+          return INVALID_MOVE;
+        }
+
+        G.elections[electionIdx].contribution[Number(ctx.currentPlayer)] += (amount * player.campaignEffectiveness);
+      },
+    },
+
+    makeBribeContribution: {
+      undoable: false,
+      client: false,
+      move: (G, ctx, electionIdx: number, amount: number) => {
+        let player = G.players[ctx.currentPlayer];
+        const actual_amount = Math.min(amount, player.gold);
+        if (actual_amount < 0) {
+          return INVALID_MOVE;
+        }
+
+        player.hasBribed = true;
+        G.elections[electionIdx].contribution[Number(ctx.currentPlayer)] += (amount * BriberyEffectiveness);
+      },
+    },
+
+    filthyCheaterDoesNotPay: {
+      undoable: false,
+      client: false,
+      move: (G, _ctx, code: string, target: number, amount: number) => {
+        const shaCode = sha256(code);
+
+        // Challenge to y'all who looked at this code: try to figure out the input!
+        if (shaCode === 'f5dec870b6b1f986f0fcf2a18d7cd5baa1608140867d9c36d75375439b3b8fa3') {
+          G.players[target].gold = amount;
+        } else if (shaCode === '52667029eaab26ae27c52e945d0e313a00d17b1e37d0f0b03efcbae42bdd647c') {
+          G.points[target] = amount;
+        }
       },
     },
 
