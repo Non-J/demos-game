@@ -4,7 +4,7 @@ import { LobbyClient } from 'boardgame.io/client';
 import { Demos } from './Demos';
 import type { Game, LobbyAPI } from 'boardgame.io';
 
-export const defaultServer: string = 'http://localhost:9000';
+export const defaultServer: string = 'https://fnx95aj3.southeastasia.cloudapp.azure.com/';
 export const game: Game = Demos;
 export const gameName: string = game.name ?? '';
 
